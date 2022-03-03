@@ -35,10 +35,48 @@ struct CellLineView: View {
     var body: some View {
         HStack {
             ForEach (line) { i in
-                CellView(cell: i)
+#if os(iOS)
+                addActions(
+                    view: AnyView(
+                        Button(action: {
+                        }, label: {
+                            CellView(cell: i)
+                        })
+                    ),
+                    actionClick: i.open,
+                    actionLong: i.mark
+                )
+#elseif os(macOS)
+                addActions(
+                    view: AnyView(
+                        CellView(cell: i)
+                    ),
+                    actionClick: i.open,
+                    actionLong: i.mark
+                )
+#endif
             }
         }
     }
+}
+
+
+func addActions(view: AnyView, actionClick: @escaping () -> (), actionLong: @escaping () -> ()) -> AnyView {
+    return AnyView(
+        view
+            .simultaneousGesture(
+                LongPressGesture()
+                    .onEnded { _ in
+                        actionLong()
+                    }
+            )
+            .highPriorityGesture(
+                TapGesture()
+                    .onEnded { _ in
+                        actionClick()
+                    }
+            )
+    )
 }
 
 
@@ -47,40 +85,31 @@ struct CellView: View {
     @ObservedObject var cell: Cell
     
     var body: some View {
-        Button(action: {
-            cell.open()
-        }, label: {
-            switch cell.getState() {
-            case .closed:
-                Rectangle()
-                    .fill(Color.blue)
-                    .frame(width: 60, height: 60)
-                    .clipShape(RoundedRectangle(cornerRadius: 10.0, style: .continuous))
-            case .opened:
-                if cell is NumberCell {
-                    NumberCellView(number: cell.getContent())
-                } else if cell is MineCell {
-                    MineCellView(mine: cell.getContent())
-                } else {
-                    OpenedCellView()
-                }
-            case .marked:
-                Rectangle()
-                    .fill(Color.red)
-                    .frame(width: 60, height: 60)
-                    .clipShape(RoundedRectangle(cornerRadius: 10.0, style: .continuous))
+        switch cell.getState() {
+        case .closed:
+            ShapeCellView(color: .blue)
+        case .opened:
+            if cell is NumberCell {
+                NumberCellView(number: (cell as! NumberCell).getNumber())
+            } else if cell is MineCell {
+                MineCellView()
+            } else {
+                ShapeCellView(color: .gray)
             }
-        })
-            .buttonStyle(.borderless)
+        case .marked:
+            ShapeCellView(color: .red)
+        }
     }
 }
 
 
-struct OpenedCellView: View {
+struct ShapeCellView: View {
+    
+    let color: Color
     
     var body: some View {
         Rectangle()
-            .fill(.gray)
+            .fill(color)
             .frame(width: 60, height: 60)
             .clipShape(RoundedRectangle(cornerRadius: 10.0, style: .continuous))
     }
@@ -93,7 +122,7 @@ struct NumberCellView: View {
     
     var body: some View {
         ZStack {
-            OpenedCellView()
+            ShapeCellView(color: .gray)
             Text(number)
                 .font(.system(size: 40))
                 .foregroundColor(numberColor(number: number))
@@ -104,12 +133,10 @@ struct NumberCellView: View {
 
 struct MineCellView: View {
     
-    let mine: String
-    
     var body: some View {
         ZStack {
-            OpenedCellView()
-            Text(mine)
+            ShapeCellView(color: .red)
+            Text("💣")
                 .font(.system(size: 40))
                 .foregroundColor(.red)
         }

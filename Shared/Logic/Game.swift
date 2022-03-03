@@ -104,11 +104,8 @@ class Game: ObservableObject {
                     if mines != 0 {
                         cell = NumberCell(
                             number: String(mines),
-                            onClosedAction: { i in
-                                self.closedNumberCellClick(i)
-                            },
-                            onOpenedAction: {
-                                
+                            onOpenedAction: { i in
+                                self.openedNumberCellClick(i)
                             }
                         )
                     } else {
@@ -122,6 +119,12 @@ class Game: ObservableObject {
                 
                 if let prev = prevLine {
                     cell.makeConnection(prev.getCell(j))
+                    if j > 0 {
+                        cell.makeConnection(prev.getCell(j - 1))
+                    }
+                    if j < width - 1 {
+                        cell.makeConnection(prev.getCell(j + 1))
+                    }
                 }
                 
                 if let prev = prevCell {
@@ -139,15 +142,27 @@ class Game: ObservableObject {
     }
     
     func closedEmptyCellClick(_ cell: Cell) {
-        if !(cell is NumberCell || cell is MineCell) {
-            for i in cell.getConnected() {
+        for i in cell.getConnected() {
+            if i.getState() == .closed {
                 i.open()
             }
         }
     }
     
-    func closedNumberCellClick(_ cell: Cell) {
-        
+    func openedNumberCellClick(_ cell: NumberCell) {
+        var count: Int  = 0
+        for i in cell.getConnected() {
+            if i.getState() == .marked {
+                count += 1
+            }
+        }
+        if String(count) == cell.getNumber() {
+            for i in cell.getConnected() {
+                if i.getState() == .closed {
+                    i.open()
+                }
+            }
+        }
     }
     
     func closedMineCellClick(_ cell: Cell) {

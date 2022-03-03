@@ -19,21 +19,15 @@ class Cell: ObservableObject, Identifiable {
     
     @Published private var state: CellState = .closed
     private let onClosedAction: (_ cell: Cell) -> ()
-    private let onOpenedAction: () -> ()
     
     private var connectedCells: [Cell] = []
     
     init(onClosedAction: @escaping (_ cell: Cell) -> ()) {
         self.onClosedAction = onClosedAction
-        self.onOpenedAction = {}
     }
     
-    fileprivate init(
-        onClosedAction: @escaping (_ cell: Cell) -> (),
-        onOpenedAction: @escaping () -> ()
-    ) {
-        self.onClosedAction = onClosedAction
-        self.onOpenedAction = onOpenedAction
+    init() {
+        self.onClosedAction = { i in }
     }
     
     func getState() -> CellState {
@@ -45,10 +39,10 @@ class Cell: ObservableObject, Identifiable {
         case .closed:
             state = .opened
             onClosedAction(self)
-        case .opened:
-            onOpenedAction()
         case .marked:
             return
+        case .opened:
+            break
         }
     }
     
@@ -61,10 +55,6 @@ class Cell: ObservableObject, Identifiable {
         case .marked:
             state = .closed
         }
-    }
-    
-    func getContent() -> String {
-        return ""
     }
     
     func makeConnection(_ cell: Cell) {
@@ -85,17 +75,22 @@ class Cell: ObservableObject, Identifiable {
 class NumberCell: Cell {
     
     private let number: String
+    private let onOpenedAction: (_ cell: NumberCell) -> ()
     
-    init(
-        number: String,
-        onClosedAction: @escaping (_ cell: Cell) -> (),
-        onOpenedAction: @escaping () -> ()
-    ) {
+    init(number: String, onOpenedAction: @escaping (_ cell: NumberCell) -> ()) {
         self.number = number
-        super.init(onClosedAction: onClosedAction, onOpenedAction: onOpenedAction)
+        self.onOpenedAction = onOpenedAction
+        super.init()
     }
     
-    override func getContent() -> String {
+    override func open() {
+        super.open()
+        if getState() == .opened {
+            onOpenedAction(self)
+        }
+    }
+    
+    func getNumber() -> String {
         return number
     }
 }
@@ -103,9 +98,6 @@ class NumberCell: Cell {
 
 class MineCell: Cell {
     
-    override func getContent() -> String {
-        return "M"
-    }
 }
 
 
