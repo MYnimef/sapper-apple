@@ -19,10 +19,6 @@ struct macOSView: View {
                 Text("Hi")
             })
             CellFieldView(field: game.field)
-                .tabItem {
-                    Image(systemName: "house.fill")
-                    Text(NSLocalizedString("Home", comment: ""))
-                }
         }
     }
 }
