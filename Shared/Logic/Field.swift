@@ -8,7 +8,7 @@
 import Foundation
 
 
-class Field: ObservableObject {
+final class Field {
     
     private let width: Int
     private let height: Int

@@ -8,7 +8,7 @@
 import Foundation
 
 
-class Game: ObservableObject {
+final class Game: ObservableObject {
     
     @Published var field: [CellLine] = []
     

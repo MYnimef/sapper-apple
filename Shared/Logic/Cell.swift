@@ -9,6 +9,7 @@ import Foundation
 
 
 enum CellState {
+    
     case closed
     case opened
     case marked
@@ -27,7 +28,9 @@ class Cell: ObservableObject, Identifiable {
     }
     
     init() {
-        self.onClosedAction = { i in }
+        self.onClosedAction = { i in
+            
+        }
     }
     
     func getState() -> CellState {
@@ -72,7 +75,7 @@ class Cell: ObservableObject, Identifiable {
 }
 
 
-class NumberCell: Cell {
+final class NumberCell: Cell {
     
     private let number: String
     private let onOpenedAction: (_ cell: NumberCell) -> ()
@@ -96,12 +99,12 @@ class NumberCell: Cell {
 }
 
 
-class MineCell: Cell {
+final class MineCell: Cell {
     
 }
 
 
-class CellLine: Identifiable {
+final class CellLine: Identifiable {
     
     private var line: [Cell]
     
